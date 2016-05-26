@@ -14,9 +14,19 @@
     "target": "es5",
     "inlineSources": true
   },
-
   "files": [
-    "main.ts",
-    "typings.d.ts"
-  ]
+    "app/employee-form.component.container.spec.ts",
+    "app/employee-form.component.spec.ts",
+    "app/employee-form.component.ts",
+    "app/ng-testing-demo.component.spec.ts",
+    "app/ng-testing-demo.component.ts",
+    "typings.d.ts",
+    "main.ts"
+  ],
+  "filesGlob": [
+    "app/**.*.ts"
+  ],
+  "atom": {
+    "rewriteTsconfig": true
+  }
 }
