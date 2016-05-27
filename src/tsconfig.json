@@ -15,11 +15,6 @@
     "inlineSources": true
   },
   "files": [
-    "app/employee-form.component.container.spec.ts",
-    "app/employee-form.component.spec.ts",
-    "app/employee-form.component.ts",
-    "app/ng-testing-demo.component.spec.ts",
-    "app/ng-testing-demo.component.ts",
     "typings.d.ts",
     "main.ts"
   ],

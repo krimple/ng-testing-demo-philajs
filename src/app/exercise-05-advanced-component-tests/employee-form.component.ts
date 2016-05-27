@@ -31,7 +31,6 @@ export class EmployeeFormComponent {
   process(form: NgForm) {
     if (!form.valid) { return };
     let employee = new Employee(form.value.firstName, form.value.firstName, form.value.email);
-    debugger;
-    this.onSubmit.next(employee);
+    this.onSubmit.emit(employee);
   }
 }
