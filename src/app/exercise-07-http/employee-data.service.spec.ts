@@ -1,57 +1,106 @@
-import {
-    beforeEachProviders,
-    xdescribe,
-    it,
-    injectAsync,
-    inject,
-    expect
-} from '@angular/core/testing';
-
-import {MockBackend, MockConnection} from '@angular/http/testing';
-
 import {provide} from '@angular/core';
-import {Http, HTTP_PROVIDERS, XHRBackend, BaseRequestOptions, Connection, ConnectionBackend, Headers, Response, ResponseOptions} from '@angular/http';
+import {
+    it,
+    describe,
+    expect,
+    inject,
+    async,
+    afterEach,
+    beforeEachProviders,
+} from '@angular/core/testing';
+import {MockBackend, MockConnection} from '@angular/http/testing';
+import {
+    Headers,
+    Http,
+    ConnectionBackend,
+    BaseRequestOptions,
+    Response,
+    ResponseOptions,
+    RequestMethod,
+} from '@angular/http';
+
 import {Employee} from './employee';
 import {EmployeeDataService} from './employee-data.service';
 
-xdescribe('Employee Data Service', () => {
+describe('Employee Data Service', () => {
     beforeEachProviders(() => {
         return [
-            HTTP_PROVIDERS,
             EmployeeDataService,
             BaseRequestOptions,
             MockBackend,
-            //provide(XHRBackend, {useClass: MockBackend}),
-            provide(Http, {useFactory: (backend, options) => {
-                return new Http(backend, options);
-                }, deps: [MockBackend, BaseRequestOptions]}),
-        ];
+            provide(Http, {useFactory: (backend: ConnectionBackend, defaultOptions: BaseRequestOptions) => {
+                return new Http(backend, defaultOptions);
+            }, deps: [MockBackend, BaseRequestOptions]}),
+        ]
     });
-    it('should get blogs', inject([XHRBackend], (mockBackend:MockBackend) => {
-        let headers: Headers = new Headers({
-          "LocationId": "150"
-        });
-        mockBackend.connections.subscribe(
-            (connection: MockConnection) => {
-                connection.mockRespond(new Response(
-                    new ResponseOptions({
-                        headers: headers
-                    })));
-            });
-    }));
 
-    it('should create an employee',
-        injectAsync([Http, EmployeeDataService], (http, service) => {
-            return new Promise((resolve, reject) => {
-                let promise = service.saveEmployee(
-                    new Employee('Ken', 'Rimple', 'ken.rimple@testing.com'));
-                promise.then(
-                    (key) => {
-                        if (typeof key === 'number' && key === 150) resolve();
+    it('creates employee', async(inject([MockBackend, EmployeeDataService],
+        (mockBackend: MockBackend, service: EmployeeDataService) => {
+        mockBackend.connections.subscribe((connection: MockConnection) => {
+            expect(connection.request.url).toBe('/api/employees');
+            expect(connection.request.method).toBe(RequestMethod.Post);
+            connection.mockRespond(
+                new Response(<any>{
+                    body: "OK",
+                    status: 201,
+                    statusText: 'CREATED',
+                    headers: new Headers({"LocationId": "150"})
+                })
+            );
+
+        });
+        let promise = service.saveEmployee(new Employee('Ken', 'Rimple', 'krimple@chariotsolutions.com'))
+            promise.then(
+                (id) => {
+                    expect(id).toBe(150);
+                },
+                (error) => {
+                    fail('Save of employee failed with unexpected error ' + error);
+                });
+
+
+        mockBackend.verifyNoPendingRequests();
+        mockBackend.resolveAllConnections();
+    })));
+
+    it('fetches a list of employees', async(inject([MockBackend, EmployeeDataService],
+        (mockBackend: MockBackend, service: EmployeeDataService) => {
+            mockBackend.connections.subscribe((connection: MockConnection) => {
+                expect(connection.request.url).toBe('/api/employees');
+                expect(connection.request.method).toBe(RequestMethod.Get);
+                connection.mockRespond(
+                    new Response(<any>{
+                        body: [
+                            {
+                                "id": 1,
+                                "firstName": "Zelda",
+                                "lastName": "Rimple",
+                                "email": "zelda@rimple.com"
+                            },
+                            {
+                                "id": 2,
+                                "firstName": "Derek",
+                                "lastName": "Rimple",
+                                "email": "derek@rimple.com"
+                            },
+                            {
+                                "id": 3,
+                                "firstName": "Teddy",
+                                "lastName": "Rimple",
+                                "email": "teddy@rimple.com"
+                            }
+                        ]
+                    }));
+            });
+ 
+            service.getEmployees()
+                .then(
+                    (results: Array<any>) => {
+                        expect(results.length).toBe(3);
                     },
                     (error) => {
-                        reject(error);
-                    });
-            });
-        }));
+                        fail('Invalid response - should not happen in this test ' + error);
+                    }
+                )
+        })));
 });
