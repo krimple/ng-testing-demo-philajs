@@ -1,38 +1,60 @@
-import { Component, OnChanges } from '@angular/core';
+import { Component, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { CalculatorService } from './calculator.service';
 import { LoggingService } from './logging.service';
 @Component({
     moduleId: module.id,
     template: `
-        Accum:  {{ calculator | json }}<br/>
-        <input #value type="number">
-        <button (click)="add(value)">+</button>
-        <button (click)="subtract(value)">-</button>
-        <button (click)="multiply(value)">X</button>
-        <button (click)="divide(value)">/</button>
+        Accum:  {{ accumulatorValue }}<br/>
+        <input #operand type="number">
+        <button (click)="add(operand.valueAsNumber)">+</button>
+        <button (click)="subtract(operand.valueAsNumber)">-</button>
+        <button (click)="multiply(operand.valueAsNumber)">X</button>
+        <button (click)="divide(operand.valueAsNumber)">/</button>
         <button (click)="clear()">C</button>
         
     `,
     selector: 'calculator',
-    providers: [CalculatorService, LoggingService]
+    providers: [CalculatorService]
 })
-export class CalculatorComponent implements OnChanges {
-
+export class CalculatorComponent implements OnChanges, OnDestroy, OnInit {
+    accumulatorValue: number;
+    subscription: any;
     constructor(private calculator: CalculatorService) { }
+
+    ngOnInit() {
+        console.log('setting up subscription');
+        this.subscription = this.calculator.valueStream$.subscribe(
+            (value) => {
+                console.log('new accumulator value', value);
+                this.accumulatorValue = value;
+            },
+            (errors) => {
+                console.error(errors);
+            },
+            () => {
+                console.log('stream complete.');
+            }
+        );
+    }
+
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
+    }
+
     add(value) {
-      this.calculator.add(value.valueAsNumber);
+      this.calculator.add(value);
     }
 
     subtract(value) {
-      this.calculator.subtract(value.valueAsNumber);
+      this.calculator.subtract(value);
     }
 
     multiply(value) {
-        this.calculator.multiply(value.valueAsNumber);
+        this.calculator.multiply(value);
     }
 
     divide(value) {
-        this.calculator.divide(value.valueAsNumber);
+        this.calculator.divide(value);
     }
 
     clear() {

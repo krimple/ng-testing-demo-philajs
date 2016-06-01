@@ -4,6 +4,8 @@ import { EmployeeFormComponent } from './exercise-05-advanced-component-tests/em
 import { CalculatorComponent } from './exercise-04-service-with-component/calculator.component';
 import { ArtEaselComponent } from './exercise-05-advanced-component-tests/art-easel.component';
 import { PigLatinPipe } from './exercise-06-pipes/pig-latin.pipe';
+import { LoggingService } from './exercise-04-service-with-component/logging.service';
+import { CalculatorService } from './exercise-04-service-with-component/calculator.service';
 
 @Component({
   moduleId: module.id,
@@ -38,6 +40,7 @@ import { PigLatinPipe } from './exercise-06-pipes/pig-latin.pipe';
   `,
   styleUrls: ['ng-testing-demo.component.css'],
   pipes: [PigLatinPipe],
+  providers: [LoggingService, CalculatorService],
   directives: [ArtEaselComponent, CalculatorComponent, EmployeeFormComponent]
 })
 export class NgTestingDemoAppComponent {

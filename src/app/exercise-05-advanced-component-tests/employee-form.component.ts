@@ -1,36 +1,36 @@
-import {Component, EventEmitter, Output} from '@angular/core';
+import {Component, Output} from '@angular/core';
+import {EventEmitter} from '@angular/core';
 import { FORM_DIRECTIVES, NgForm } from '@angular/common';
 import {Employee} from './employee';
 
 @Component({
   selector: 'employee-form',
   template: `
-    <form #employeeForm="ngForm" novalidate
-      (ngSubmit)="process(employeeForm)">
-      <input required
-             ngControl="firstName"
-             #firstName
+    <form novalidate #employeeForm="ngForm"
+             (ngSubmit)="process(employee)">
+      <input required #firstName
+             [ngControl]="firstName"
+             [(ngModel)]="employee.firstName"  
              type="text">
-      <input required
-            ngControl="lastName"
-            #lastName
+      <input required #lastName
+            [ngControl]="lastName"
+            [(ngModel)]="employee.lastName"
             type="text">
-      <input required
-            ngControl="email"
-            #email
+      <input required #email
+            [ngControl]="email"
+            [(ngModel)]="employee.email"
             type="email">
-      <button>Process</button>
+      <button [disabled]="!employeeForm.valid">Process</button>
     </form>
-    <p>Indicators: {{ employeeForm.valid }}</p>
+    <p>Indicators: {{ employeeForm.value | json }}</p>
   `,
-  directives: [FORM_DIRECTIVES]
+  directives: [FORM_DIRECTIVES, NgForm]
 })
 export class EmployeeFormComponent {
   employee: Employee = new Employee("", "", "");
-  @Output() onSubmit: EventEmitter<Employee> = new EventEmitter<Employee>();
-  process(form: NgForm) {
-    if (!form.valid) { return };
-    let employee = new Employee(form.value.firstName, form.value.firstName, form.value.email);
-    this.onSubmit.emit(employee);
+  @Output() onSubmit = new EventEmitter<Employee>();
+  process() {
+    debugger;
+    this.onSubmit.emit(this.employee);
   }
 }

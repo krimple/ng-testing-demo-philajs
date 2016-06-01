@@ -15,8 +15,8 @@
     "inlineSources": true
   },
   "files": [
-    "typings.d.ts",
-    "main.ts"
+   "main.ts",
+   "typings.d.ts"
   ],
   "filesGlob": [
     "app/**.*.ts"

@@ -14,8 +14,8 @@ import {TestComponentBuilder, ComponentFixture} from '@angular/compiler/testing'
 import {EmployeeFormComponent} from './employee-form.component';
 import { dispatchEvent } from '@angular/platform-browser/testing';
 import { By } from '@angular/platform-browser/src/dom/debug/by';
-import { DebugElement } from '@angular/core';
-
+import { DebugElement, EventEmitter } from '@angular/core';
+import { Employee } from './employee';
 //TODO - this does not work - tick does not simulate passage of time,
 // stolen hack from https://github.com/angular/material2/blob/master/src/components/input/input.spec.ts
 // does not help either. Will update in a future post, but this is CLOSE to what you could
@@ -23,15 +23,19 @@ import { DebugElement } from '@angular/core';
 xdescribe('Employee Form Component Unit Test', () => {
     let tcb: TestComponentBuilder;
     let fixture: ComponentFixture<EmployeeFormComponent>;
+    let form: DebugElement;
     let firstNameInput: DebugElement;
     let lastNameInput: DebugElement;
     let emailInput: DebugElement;
+    let submitFormButton: HTMLButtonElement;
+    let employeeEvent: EventEmitter<Employee>;
+    let deliveredEmployee: Employee = null;
 
     function dispatchInputEvent(element: DebugElement, value: string) {
         let inputElement = <HTMLInputElement>element.nativeElement;
         inputElement.value = value;
         var evt = document.createEvent('HTMLEvents');
-        evt.initEvent('blur', true, true);
+        evt.initEvent('input', true, true);
         inputElement.dispatchEvent(evt);
     }
 
@@ -41,11 +45,20 @@ xdescribe('Employee Form Component Unit Test', () => {
 
     beforeEach(async(() => {
        tcb.createAsync(EmployeeFormComponent)
-           .then((fx) => {
+           .then((fx: ComponentFixture<EmployeeFormComponent>) => {
                fixture = fx;
+               form = fx.debugElement.query(By.css('form'));
                firstNameInput = fx.debugElement.queryAll(By.css('input'))[0];
                lastNameInput = fx.debugElement.queryAll(By.css('input'))[1];
                emailInput = fx.debugElement.queryAll(By.css('input'))[2];
+               employeeEvent = fx.componentInstance.onSubmit;
+               submitFormButton = fx.debugElement.query(By.css('button')).nativeElement;
+               employeeEvent.subscribe(
+                   (employee) => {
+                       console.log('***** EMPLOYEE DELIVERED', employee);
+                       deliveredEmployee = employee;
+                   }
+               );
             });
     }));
 
@@ -58,9 +71,15 @@ xdescribe('Employee Form Component Unit Test', () => {
         tick();
         fixture.detectChanges();
         tick();
-        expect(fixture.componentInstance.employee).toBeDefined();
-        expect(fixture.componentInstance.employee.firstName).toBe('Chiles');
-        expect(fixture.componentInstance.employee.lastName).toBe('Smith');
-        expect(fixture.componentInstance.employee.email).toBe('chiles@smith.com');
+        fixture.componentInstance.process();
+        tick();
+        fixture.detectChanges();
+        tick();
+        submitFormButton.click();
+        tick();
+        expect(deliveredEmployee).toBeDefined();
+        expect(deliveredEmployee.firstName).toBe('Chiles');
+        expect(deliveredEmployee.lastName).toBe('Smith');
+        expect(deliveredEmployee.email).toBe('chiles@smith.com');
     }));
 });

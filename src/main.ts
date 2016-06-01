@@ -10,5 +10,5 @@ if (environment.production) {
 }
 
 bootstrap(NgTestingDemoAppComponent, [FORM_PROVIDERS, HTTP_PROVIDERS, ROUTER_PROVIDERS])
-    .catch((error) =>  { console.log(error)});
+    .catch((e) => { console.log(e); });
 
